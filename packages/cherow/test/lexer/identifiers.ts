@@ -38,86 +38,85 @@ describe('Lexer - Identifier', () => {
       });
   }
 
+// TODO! Should not fail
+
   fail('should fail "🀒"', Context.Empty, {
-    source: '🀒'
+      source: '🀒'
   })
 
 
-  fail('should fail "\\123\\uD800"', Context.Empty, {
-     source: '\\123\\uD800'
-   })
-
-   fail('should fail "123\\uDAAA"', Context.Empty, {
-    source: '\\123\\uDAAA'
-  })
-
-  fail('should fail "\\123\\uD800"', Context.Empty, {
-    source: '\\123\\uD800'
+  fail('should fail "💩"', Context.Empty, {
+    source: '💩'
   })
 /*
-  fail('should fail "\\123\\uDBFF"', Context.Empty, {
-    source: '\\123\\uDBFF'
-  })
-
-  fail('should fail "\\uD800\\uDFFF"', Context.Empty, {
-    source: '\\uD800\\uDFFF'
-  })
-*/
-  //// fail('should fail "a\\uD83B\\uDE00456789"', Context.Empty, {
-    //// source: 'a\\uD83B\\uDE00456789'
-  //// })
-
-  // fail('should fail "\\uD83B\\uDE00"', Context.Empty, {
-     //  source: '\\uD83B\\uDE00'
-  // })
-
-  pass("scans '𐊧a'", {
-    source: "𐊧a",
-    "value": "𐊧a",
+  pass("scans '𪘀'", {
+    source: "𪘀",
+    "value": "𪘀",
     raw: "'abc'",
     token: Token.Identifier,
     line: 1,
     column: 3,
-});
+});*/
 
-pass("scans 'a𐊧'", {
-  source: "a𐊧",
-  "value": "a𐊧",
-  raw: "'abc'",
-  token: Token.Identifier,
-  line: 1,
-  column: 3,
-});
+  fail('should fail "\\123\\uD800"', Context.Empty, {
+      source: '\\123\\uD800'
+  })
 
-pass("scans 'a𐊧\\u0052oo'", {
-  source: "a𐊧\\u0052oo",
-  "value": "a𐊧Roo",
-  raw: "'abc'",
-  token: Token.Identifier,
-  line: 1,
-  column: 11,
-});
+  fail('should fail "123\\uDAAA"', Context.Empty, {
+      source: '\\123\\uDAAA'
+  })
 
-pass("scanss 'a𐊧\\u0052oo𐊧'", {
-  source: "a𐊧\\u0052oo𐊧",
-  "value": "a𐊧Roo𐊧",
-  raw: "'abc'",
-  token: Token.Identifier,
-  line: 1,
-  column: 13,
-});
+  fail('should fail "\\123\\uD800"', Context.Empty, {
+      source: '\\123\\uD800'
+  })
 
-pass("scans 'a𐊧\\u0052oo'", {
-  source: "𐊧\\u0052oo",
-  "value": "𐊧Roo",
-  raw: "'abc'",
-  token: Token.Identifier,
-  line: 1,
-  column: 10,
-});
+  pass("scans '𐊧a'", {
+      source: "𐊧a",
+      "value": "𐊧a",
+      raw: "'abc'",
+      token: Token.Identifier,
+      line: 1,
+      column: 3,
+  });
+
+  pass("scans 'a𐊧'", {
+      source: "a𐊧",
+      "value": "a𐊧",
+      raw: "'abc'",
+      token: Token.Identifier,
+      line: 1,
+      column: 3,
+  });
+
+  pass("scans 'a𐊧\\u0052oo'", {
+      source: "a𐊧\\u0052oo",
+      "value": "a𐊧Roo",
+      raw: "'abc'",
+      token: Token.Identifier,
+      line: 1,
+      column: 11,
+  });
+
+  pass("scanss 'a𐊧\\u0052oo𐊧'", {
+      source: "a𐊧\\u0052oo𐊧",
+      "value": "a𐊧Roo𐊧",
+      raw: "'abc'",
+      token: Token.Identifier,
+      line: 1,
+      column: 13,
+  });
+
+  pass("scans 'a𐊧\\u0052oo'", {
+      source: "𐊧\\u0052oo",
+      "value": "𐊧Roo",
+      raw: "'abc'",
+      token: Token.Identifier,
+      line: 1,
+      column: 10,
+  });
 
 
-pass("scans 'a℘'", {
+  pass("scans 'a℘'", {
       source: "a℘",
       "value": "a℘",
       raw: "'abc'",
@@ -358,209 +357,209 @@ pass("scans 'a℘'", {
       });
 
       pass("scans '\\uAAAA\\uBBBB'", {
-        source: "\\uAAAA\\uBBBB",
-        "value": "ꪪ뮻",
-        raw: "'var'",
-        token: Token.Identifier,
-        line: 1,
-        column: 12,
-    });
+          source: "\\uAAAA\\uBBBB",
+          "value": "ꪪ뮻",
+          raw: "'var'",
+          token: Token.Identifier,
+          line: 1,
+          column: 12,
+      });
   });
 
   describe('Invalid surrogate pair range - Invalid tokenSurrogate pairs encoded in string', () => {
 
-    pass("scans '\\uD83B\\uDE0'", {
-      source: "\\uD83B\\uDE0",
-      value: "",
-      raw: "",
-      token: Token.Invalid,
-      line: 1,
-      column: 6,
-    });
+      pass("scans '\\uD83B\\uDE0'", {
+          source: "\\uD83B\\uDE0",
+          value: "",
+          raw: "",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-    pass("scans '\\uD800\\uDFFF'", {
-      source: "\\uD800\\uDFFF",
-      "value": "",
-      raw: "",
-      token: Token.Invalid,
-      line: 1,
-      column: 6,
-  });
+      pass("scans '\\uD800\\uDFFF'", {
+          source: "\\uD800\\uDFFF",
+          "value": "",
+          raw: "",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-  pass("scans '\\uDAAA\\uDC00'", {
-    source: "\\uDAAA\\uDC00",
-    "value": "",
-    raw: "",
-    token: Token.Invalid,
-    line: 1,
-    column: 6,
-});
+      pass("scans '\\uDAAA\\uDC00'", {
+          source: "\\uDAAA\\uDC00",
+          "value": "",
+          raw: "",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-pass("scans '\\uDBFF\\uDDD0'", {
-  source: "\\uDBFF\\uDDD0",
-  "value": "",
-  raw: "",
-  token: Token.Invalid,
-  line: 1,
-  column: 6,
-});
+      pass("scans '\\uDBFF\\uDDD0'", {
+          source: "\\uDBFF\\uDDD0",
+          "value": "",
+          raw: "",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-pass("scans '\\uDBFF\\uDFFF'", {
-  source: "\\uDBFF\\uDFFF",
-  "value": "",
-  raw: "",
-  token: Token.Invalid,
-  line: 1,
-  column: 6,
-});
+      pass("scans '\\uDBFF\\uDFFF'", {
+          source: "\\uDBFF\\uDFFF",
+          "value": "",
+          raw: "",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
 
   });
 
   describe('Surrogate pairs encoded in string', () => {
 
-    pass("scans '\\u{10401}'", {
-      source: "\\u{10401}",
-      value: "𐐁",
-      raw: "'case'",
-      token: Token.Identifier,
-      line: 1,
-      column: 9,
-  });
+      pass("scans '\\u{10401}'", {
+          source: "\\u{10401}",
+          value: "𐐁",
+          raw: "'case'",
+          token: Token.Identifier,
+          line: 1,
+          column: 9,
+      });
 
-  pass("scans '\\u{10401}'", {
-    source: "\\u{}",
-    value: "",
-    raw: "'case'",
-    token: Token.Invalid,
-    line: 1,
-    column: 3,
-});
+      pass("scans '\\u{10401}'", {
+          source: "\\u{}",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 3,
+      });
 
-  // Invalid
-  pass("scans '\\uD801\\uDC01'", {
-    source: "\\uD801\\uDC01",
-    value: "",
-    raw: "'case'",
-    token: Token.Invalid,
-    line: 1,
-    column: 6,
-});
+      // Invalid
+      pass("scans '\\uD801\\uDC01'", {
+          source: "\\uD801\\uDC01",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-// Invalid
-pass("scans '\\uD801\\uDC01'", {
-  source: "\\uD8%1",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      // Invalid
+      pass("scans '\\uD801\\uDC01'", {
+          source: "\\uD8%1",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\uD801'", {
-  source: "\\uD801",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 6,
-});
+      pass("scans '\\uD801'", {
+          source: "\\uD801",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 6,
+      });
 
-pass("scans '\\u.801'", {
-  source: "\\uD8.1",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\u.801'", {
+          source: "\\uD8.1",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
 
-pass("scans '\\uD8.1'", {
-  source: "\\uD8.1",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\uD8.1'", {
+          source: "\\uD8.1",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\uD.01'", {
-  source: "\\uD8.1",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\uD.01'", {
+          source: "\\uD8.1",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\u'", {
-  source: "\\u",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\u'", {
+          source: "\\u",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\u%'", {
-  source: "\\uD",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\u%'", {
+          source: "\\uD",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\uD&'", {
-  source: "\\uD8",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\uD&'", {
+          source: "\\uD8",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\uD8.'", {
-  source: "\\uD80",
-  value: "",
-  raw: "'case'",
-  token: Token.Invalid,
-  line: 1,
-  column: 2,
-});
+      pass("scans '\\uD8.'", {
+          source: "\\uD80",
+          value: "",
+          raw: "'case'",
+          token: Token.Invalid,
+          line: 1,
+          column: 2,
+      });
 
-pass("scans '\\u{10401}'", {
-  source: "\\u{10401}",
-  value: "𐐁",
-  raw: "'case'",
-  token: Token.Identifier,
-  line: 1,
-  column: 9,
-});
+      pass("scans '\\u{10401}'", {
+          source: "\\u{10401}",
+          value: "𐐁",
+          raw: "'case'",
+          token: Token.Identifier,
+          line: 1,
+          column: 9,
+      });
 
-pass("scans '\\u{10401}'", {
-  source: "\\u{10401}",
-  value: "𐐁",
-  raw: "'case'",
-  token: Token.Identifier,
-  line: 1,
-  column: 9,
-});
+      pass("scans '\\u{10401}'", {
+          source: "\\u{10401}",
+          value: "𐐁",
+          raw: "'case'",
+          token: Token.Identifier,
+          line: 1,
+          column: 9,
+      });
 
   });
 
   describe('Escaped keywords', () => {
 
 
-    pass("scans '\\u{63}ase'", {
-      source: "\\u{63}ase",
-      value: "case",
-      raw: "'case'",
-      token: Token.EscapedKeyword,
-      line: 1,
-      column: 9,
-  });
+      pass("scans '\\u{63}ase'", {
+          source: "\\u{63}ase",
+          value: "case",
+          raw: "'case'",
+          token: Token.EscapedKeyword,
+          line: 1,
+          column: 9,
+      });
       pass("scans 'cl\\u0061ss'", {
           source: "cl\\u0061ss",
           value: "class",

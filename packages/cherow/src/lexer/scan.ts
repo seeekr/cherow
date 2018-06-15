@@ -280,8 +280,11 @@ for (let i = Chars.LowerA; i <= Chars.LowerZ; i++) {
   table[i] = scanIdentifier;
 }
 
-// `\\u{N}var`
-table[Chars.Backslash] = scanIdentifier;
+// `\\u{N}var` , `$foo`, `_var`
+table[Chars.Backslash] = table[Chars.Dollar] = table[Chars.Underscore] = scanIdentifier;
+
+// ``string``
+table[Chars.Backtick] = scanTemplate;
 
 // `^`, `^=`
 table[Chars.Caret] = (parser: Parser) => {
@@ -292,12 +295,6 @@ table[Chars.Caret] = (parser: Parser) => {
       return Token.BitwiseXor;
   }
 };
-
-// `$foo`, `_var`
-table[Chars.Dollar] = table[Chars.Underscore] = scanIdentifier;
-
-// ``string``
-table[Chars.Backtick] = scanTemplate;
 
 // `|`, `||`, `|=`
 table[Chars.VerticalBar] = (parser: Parser) => {
