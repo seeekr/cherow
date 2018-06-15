@@ -240,7 +240,7 @@ export function scanHexDigits(parser: Parser, context: Context): Token {
 */
 export function scanImplicitOctalDigits(parser: Parser, context: Context): Token {
   let { index, column } = parser;
-  let c = index;
+  const c = index;
   if (context & Context.Strict) recordErrors(parser, context, Errors.Unexpected);
   let next = parser.source.charCodeAt(parser.index);
   parser.tokenValue = 0;

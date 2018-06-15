@@ -239,7 +239,6 @@ table[Chars.EqualSign] = (parser: Parser) => {
   return Token.Assign;
 };
 
-
 // `>`, `>=`, `>>`, `>>>`, `>>=`, `>>>=`
 table[Chars.GreaterThan] = (parser: Parser) => {
   parser.index++; parser.column++;
