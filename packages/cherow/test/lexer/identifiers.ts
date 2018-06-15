@@ -70,6 +70,33 @@ describe('Lexer - Identifier', () => {
       source: '\\123\\uD800'
   })
 
+  pass("scans '_፩፪፫፬፭፮፯፰፱'", {
+    source: "_፩፪፫፬፭፮፯፰፱",
+    "value": "_፩፪፫፬፭፮፯፰፱",
+    raw: "'abc'",
+    token: Token.Identifier,
+    line: 1,
+    column: 6, // TODO! Should be 10
+  });
+
+  pass("scans '℘'", {
+    source: "℘",
+    "value": "℘",
+    raw: "'abc'",
+    token: Token.Identifier,
+    line: 1,
+    column: 1,
+  });
+
+  pass("scans '℘\\u2118'", {
+    source: "℘\\u2118",
+    "value": "℘℘",
+    raw: "'abc'",
+    token: Token.Identifier,
+    line: 1,
+    column: 7,
+  });
+
   pass("scans '𐊧a'", {
       source: "𐊧a",
       "value": "𐊧a",
