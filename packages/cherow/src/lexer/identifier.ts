@@ -171,6 +171,12 @@ export function scanMaybeIdentifier(parser: Parser, context: Context, first: num
 
   first = parser.source.charCodeAt(parser.index++);
 
+  // Left to fix:
+  //
+  // - Remove this, and use the existing code in 'scanIdentifierSuffix'
+  // - Add support for scanning '𪘀' and 'abc𪘀'
+  // - Make sure the column values are correct
+
   if ((first & 0xFC00) === Chars.LeadSurrogateMin) {
       const lo = parser.source.charCodeAt(parser.index);
       if ((lo & 0xFC00) === 0xDC00) {

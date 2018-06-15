@@ -88,6 +88,15 @@ describe('Lexer - Identifier', () => {
     column: 1,
   });
 
+  pass("scans 'abc℘'", {
+    source: "abc℘",
+    "value": "abc℘",
+    raw: "'abc'",
+    token: Token.Identifier,
+    line: 1,
+    column: 4,
+  });
+
   pass("scans '℘\\u2118'", {
     source: "℘\\u2118",
     "value": "℘℘",
