@@ -60,6 +60,7 @@ function parseIdentifierSuffix(parser: Parser): Token {
           hasEscape = true;
           start = parser.index;
       } else {
+          // Utf1
           if ((ch & 0xFC00) === Chars.LeadSurrogateMin) {
               const lo = parser.source.charCodeAt(parser.index + 1);
               parser.column++;
@@ -93,7 +94,7 @@ function parseIdentifierSuffix(parser: Parser): Token {
  */
 export function scanIdentifierUnicodeEscape(parser: Parser): number {
   parser.index++; parser.column++;
-  if (parser.source.charCodeAt(parser.index) !== Chars.LowerU) report(parser, Errors.Unexpected);
+  if (parser.source.charCodeAt(parser.index) !== Chars.LowerU) report(parser, Errors.InvalidUnicodeEscape);
   parser.index++; parser.column++;
   if (consumeOpt(parser, Chars.LeftBrace)) {
       //\u{HexDigits}
@@ -102,28 +103,28 @@ export function scanIdentifierUnicodeEscape(parser: Parser): number {
       if (digit < 0) return -1;
       while (digit >= 0) {
           value = (value << 4) | digit;
-          if (value > Chars.NonBMPMax) report(parser, Errors.Unexpected);
+          if (value > Chars.NonBMPMax) report(parser, Errors.UndefinedUnicodeCodePoint);
           parser.index++; parser.column++;
           digit = toHex(parser.source.charCodeAt(parser.index));
       }
       if (value < 0 || !consumeOpt(parser, Chars.RightBrace)) {
-          report(parser, Errors.Unexpected);
+          report(parser, Errors.InvalidUnicodeEscape);
       }
       return value;
   }
   //\uHex4Digits
   if (parser.index + 4 > parser.length) return -1;
-  const char1 = toHex(parser.source.charCodeAt(parser.index));
-  if (char1 < 0) return -1;
-  const char2 = toHex(parser.source.charCodeAt(parser.index + 1));
-  if (char2 < 0) return -1;
-  const char3 = toHex(parser.source.charCodeAt(parser.index + 2));
-  if (char3 < 0) return -1;
-  const char4 = toHex(parser.source.charCodeAt(parser.index + 3));
-  if (char4 < 0) return -1;
+  const cp1 = toHex(parser.source.charCodeAt(parser.index));
+  if (cp1 < 0) return -1;
+  const cp2 = toHex(parser.source.charCodeAt(parser.index + 1));
+  if (cp2 < 0) return -1;
+  const cp3 = toHex(parser.source.charCodeAt(parser.index + 2));
+  if (cp3 < 0) return -1;
+  const cp4 = toHex(parser.source.charCodeAt(parser.index + 3));
+  if (cp4 < 0) return -1;
   parser.index += 4;
   parser.column += 4;
-  return char1 << 12 | char2 << 8 | char3 << 4 | char4;
+  return cp1 << 12 | cp2 << 8 | cp3 << 4 | cp4;
 }
 
 /**

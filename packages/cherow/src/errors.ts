@@ -57,7 +57,8 @@ export const enum Errors {
     InvalidRegularExp,
     HtmlCommentInModule,
     UnterminatedTemplate,
-    InvalidPrivateFieldAccess
+    InvalidPrivateFieldAccess,
+    UndefinedUnicodeCodePoint
 }
 /*@internal*/
 export const errorMessages: {
@@ -118,6 +119,7 @@ export const errorMessages: {
     [Errors.HtmlCommentInModule]: 'HTML comments are not allowed in modules',
     [Errors.UnterminatedTemplate]: 'Unterminated template literal',
     [Errors.InvalidPrivateFieldAccess]: 'Invalid private field \'%0\'',
+    [Errors.UndefinedUnicodeCodePoint]: 'Undefined Unicode code-point',
 
 };
 
