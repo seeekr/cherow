@@ -7,6 +7,14 @@ import { isValidIdentifierStart, isValidIdentifierPart, mustEscape } from '../un
 
 export const hasBit = (mask: number, flags: number) => (mask & flags) === flags;
 
+/* Numeric literal state */
+export const enum NumericState {
+  None         = 0,
+  IsFloat      = 1 << 0,
+  IsBigInt     = 1 << 1,
+  HasSeparator = 1 << 2,
+}
+
 /* Sting / template literal escapes */
 export const enum Escape {
   Empty       = -1,

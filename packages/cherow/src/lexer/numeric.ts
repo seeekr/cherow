@@ -1,8 +1,9 @@
+import { BigIntLiteral } from './../estree';
 import { Parser } from '../types';
 import { Chars } from '../chars';
 import { Token } from '../token';
 import { Context, Flags } from '../common';
-import { consumeOpt, toHex } from './common';
+import { consumeOpt, toHex, NumericState } from './common';
 import { Errors, recordErrors, report } from '../errors';
 import { isValidIdentifierStart } from '../unicode';
 
@@ -26,14 +27,13 @@ import { isValidIdentifierStart } from '../unicode';
  */
 export function scanNumeric(parser: Parser, context: Context): Token {
   const { index, column } = parser;
-
   let next = parser.source.charCodeAt(parser.index);
-  let isFloat = next === Chars.Period;
+  let state = NumericState.None;
+  if (next === Chars.Period) state = state |= NumericState.IsFloat;
 
-  if (isFloat) {
+  if (state & NumericState.IsFloat) {
       parser.tokenValue = scanDecimalDigitsOrSeparator(parser);
   } else {
-      let seenSeparator = false;
 
       // Most number values fit into 4 bytes, but for long numbers
       // we would need a workaround...
@@ -45,18 +45,18 @@ export function scanNumeric(parser: Parser, context: Context): Token {
               parser.index++; parser.column++;
               next = parser.source.charCodeAt(parser.index);
               if (next === Chars.Underscore) report(parser, Errors.Unexpected);
-              seenSeparator = true;
+              state = state |= NumericState.HasSeparator;
               next = next;
               continue;
           }
-          seenSeparator = false;
+          state = state & ~NumericState.HasSeparator;
           parser.tokenValue = parser.tokenValue * 10 + next - Chars.Zero;
           parser.index++; parser.column++;
           --digit;
           next = parser.source.charCodeAt(parser.index);
       }
 
-      if (seenSeparator) report(parser, Errors.Unexpected);
+      if (state & NumericState.HasSeparator) report(parser, Errors.Unexpected);
 
       if (digit >= 0 && next !== Chars.Period && (parser.index >= parser.length || !isValidIdentifierStart(next))) {
           if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(index, parser.index);
@@ -69,18 +69,16 @@ export function scanNumeric(parser: Parser, context: Context): Token {
   }
 
   if (consumeOpt(parser, Chars.Period)) {
-      isFloat = true;
+      state |= NumericState.IsFloat;
       if (parser.source.charCodeAt(parser.index) === Chars.Underscore) report(parser, Errors.ZeroDigitNumericSeparator);
       parser.tokenValue = `${parser.tokenValue}.${scanDecimalDigitsOrSeparator(parser)}`;
   }
 
   const end = parser.index;
 
-  let bigInt = false;
-
   if (parser.source.charCodeAt(parser.index) === Chars.LowerN) {
-      if (isFloat) report(parser, Errors.Unexpected);
-      bigInt = true;
+      if (state & NumericState.IsFloat) report(parser, Errors.Unexpected);
+      state = state |= NumericState.IsBigInt;
       parser.index++; parser.column++;
   }
 
@@ -100,9 +98,9 @@ export function scanNumeric(parser: Parser, context: Context): Token {
   }
 
   if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(index, parser.index);
-  if (isFloat) parser.tokenValue = parseFloat(parser.tokenValue);
+  if (state & NumericState.IsFloat) parser.tokenValue = parseFloat(parser.tokenValue);
 
-  return bigInt ? Token.BigInt : Token.NumericLiteral;
+  return state & NumericState.IsBigInt ? Token.BigInt : Token.NumericLiteral;
 }
 
 /**
@@ -162,7 +160,7 @@ export function scanOctalOrBinaryDigits(parser: Parser, context: Context, base: 
   parser.index += 2; parser.column += 2;
   let code = parser.source.charCodeAt(parser.index);
   if (!(code >= Chars.Zero && code <= Chars.Nine)) report(parser, Errors.InvalidOrUnexpectedToken);
-  let seenSeparator = false;
+  let state = NumericState.None;
   let digits = 0;
   parser.tokenValue = 0;
   while (parser.index < parser.length) {
@@ -170,10 +168,10 @@ export function scanOctalOrBinaryDigits(parser: Parser, context: Context, base: 
       if (code === Chars.Underscore) {
           parser.index++; parser.column++;
           if (parser.source.charCodeAt(parser.index) === Chars.Underscore) report(parser, Errors.ContinuousNumericSeparator);
-          seenSeparator = true;
+          state = NumericState.HasSeparator;
           continue;
       }
-      seenSeparator = false;
+      state = NumericState.None;
       const converted = code - Chars.Zero;
       if (!(code >= Chars.Zero && code <= Chars.Nine) || converted >= base) break;
       parser.tokenValue = parser.tokenValue * base + converted;
@@ -185,13 +183,13 @@ export function scanOctalOrBinaryDigits(parser: Parser, context: Context, base: 
       report(parser, Errors.InvalidOrUnexpectedToken);
   }
 
-  if (seenSeparator) report(parser, Errors.TrailingNumericSeparator);
-  const bigInt = consumeOpt(parser, Chars.LowerN);
+  if (state & NumericState.HasSeparator) report(parser, Errors.TrailingNumericSeparator);
+  if(consumeOpt(parser, Chars.LowerN)) state = state |= NumericState.IsBigInt
   if (isValidIdentifierStart(parser.source.charCodeAt(parser.index))) {
       report(parser, Errors.Unexpected);
   }
   if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(index, parser.index);
-  return bigInt ? Token.BigInt : Token.NumericLiteral;
+  return state & NumericState.IsBigInt ? Token.BigInt : Token.NumericLiteral;
 }
 
 /**
@@ -208,26 +206,26 @@ export function scanHexDigits(parser: Parser, context: Context): Token {
   parser.tokenValue = toHex(parser.source.charCodeAt(parser.index));
   if (parser.tokenValue < 0) report(parser, Errors.Unexpected);
   parser.index++; parser.column++;
-  let seenSeparator = false;
+  let state = NumericState.None;
   while (parser.index < parser.length) {
       const next = parser.source.charCodeAt(parser.index);
       if (next === Chars.Underscore) {
           parser.index++; parser.column++;
-          if (seenSeparator) report(parser, Errors.TrailingNumericSeparator);
-          seenSeparator = true;
+          if (parser.source.charCodeAt(parser.index) === Chars.Underscore) report(parser, Errors.TrailingNumericSeparator);
+          state = NumericState.HasSeparator;
           continue;
       }
 
       const digit = toHex(next);
       if (digit < 0) break;
-      seenSeparator = false;
+      state = NumericState.None;
       parser.tokenValue = parser.tokenValue * 16 + digit;
       parser.index++; parser.column++;
   }
-  if (seenSeparator) report(parser, Errors.TrailingNumericSeparator);
-  const bigInt = consumeOpt(parser, Chars.LowerN);
+  if (state & NumericState.HasSeparator) report(parser, Errors.TrailingNumericSeparator);
+  if(consumeOpt(parser, Chars.LowerN)) state = state |= NumericState.IsBigInt;
   if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(index, parser.index);
-  return bigInt ? Token.BigInt : Token.NumericLiteral;
+  return state & NumericState.IsBigInt ? Token.BigInt : Token.NumericLiteral;
 }
 
 /**
@@ -240,7 +238,7 @@ export function scanHexDigits(parser: Parser, context: Context): Token {
 */
 export function scanImplicitOctalDigits(parser: Parser, context: Context): Token {
   let { index, column } = parser;
-  let c = index;
+  const start = index;
   if (context & Context.Strict) recordErrors(parser, context, Errors.Unexpected);
   let next = parser.source.charCodeAt(parser.index);
   parser.tokenValue = 0;
@@ -260,7 +258,7 @@ export function scanImplicitOctalDigits(parser: Parser, context: Context): Token
   parser.index = index;
   parser.column = column;
   if (isValidIdentifierStart(next)) report(parser, Errors.Unexpected);
-  if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(c, parser.index);
+  if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(start, parser.index);
   return Token.NumericLiteral;
 }
 
@@ -272,26 +270,24 @@ export function scanImplicitOctalDigits(parser: Parser, context: Context): Token
 */
 export function scanDecimalDigitsOrSeparator(parser: Parser): string {
   let start = parser.index;
-  let allowSeparator = false;
+  let state = NumericState.None;
   let result = '';
   while (parser.index < parser.length) {
       const ch = parser.source.charCodeAt(parser.index);
       if (ch === Chars.Underscore) {
           result += parser.source.substring(start, parser.index);
           if (parser.source.charCodeAt(parser.index + 1) === Chars.Underscore) report(parser, Errors.TrailingNumericSeparator);
-          allowSeparator = true;
+          state = NumericState.HasSeparator;
           parser.index++; parser.column++;
           start = parser.index;
           continue;
       }
 
       if (!(ch >= Chars.Zero && ch <= Chars.Nine)) break;
-      allowSeparator = false;
+      state = NumericState.None;
       parser.index++; parser.column++;
 
   }
-  if (allowSeparator) {
-      report(parser, Errors.TrailingNumericSeparator);
-  }
+  if ((state & NumericState.HasSeparator) === NumericState.HasSeparator) report(parser, Errors.TrailingNumericSeparator);
   return result + parser.source.substring(start, parser.index);
 }
