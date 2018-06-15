@@ -31,7 +31,7 @@ export function scanIdentifier(parser: Parser): Token {
 
   parser.tokenValue = parser.source.slice(index, parser.index);
 
-  if (parser.index >= parser.length || first <= 127 && first !== Chars.Backslash) {
+  if (parser.index >= parser.length || first <= Chars.MaxAsciiCharacter && first !== Chars.Backslash) {
       return getIdentifierToken(parser);
   }
 
@@ -40,11 +40,10 @@ export function scanIdentifier(parser: Parser): Token {
 }
 
 /**
- * Parse identifier suffix
+ * Parse identifier suffix. The identifier scanning will fall back into
+ * this if the hot path fails or any surrogate pairs / unicode escapes
  *
  * @param parser Parser object
- * @param context Context masks
- * @param first codepoint
  */
 function parseIdentifierSuffix(parser: Parser): Token {
   let start = parser.index;
@@ -144,10 +143,12 @@ function getIdentifierToken(parser: Parser): Token {
 }
 
 /**
-* Scans maybe identifier
-*
-* @param parser Parser object
-*/
+ * Scans maybe identifier
+ *
+ * @param parser Parser object
+ * @param context Context masks
+ * @param first code point
+ */
 export function scanMaybeIdentifier(parser: Parser, context: Context, first: number): Token {
   const c = context;
   if (isWhiteSpaceSingleLine(first)) {
@@ -163,7 +164,7 @@ export function scanMaybeIdentifier(parser: Parser, context: Context, first: num
 
   if ((first & 0xFC00) === Chars.LeadSurrogateMin) {
       const lo = parser.source.charCodeAt(parser.index);
-      if ((lo & 0xfc00) === 0xdc00) {
+      if ((lo & 0xFC00) === 0xDC00) {
           first = (first & 0x3FF) << 10 | lo & 0x3FF | Chars.NonBMPMin;
           parser.index++; parser.column++;
       }
