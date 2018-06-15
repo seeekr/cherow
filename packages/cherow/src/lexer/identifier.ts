@@ -25,7 +25,8 @@ export function scanIdentifier(parser: Parser): Token {
   let first = parser.source.charCodeAt(parser.index);
   // Hot path - fast scanning for identifiers and non-escaped keywords
   while (isAsciiCodePoint(first)) {
-      parser.index++; parser.column++;
+      parser.index++;
+      parser.column++;
       first = parser.source.charCodeAt(parser.index);
   }
 
@@ -97,7 +98,8 @@ export function scanIdentifierUnicodeEscape(parser: Parser): number {
   parser.index++;
   parser.column++;
   if (parser.source.charCodeAt(parser.index) !== Chars.LowerU) report(parser, Errors.InvalidUnicodeEscape);
-  parser.index++; parser.column++;
+  parser.index++;
+  parser.column++;
   if (consumeOpt(parser, Chars.LeftBrace)) {
       //\u{HexDigits}
       let value = 0;
@@ -106,7 +108,8 @@ export function scanIdentifierUnicodeEscape(parser: Parser): number {
       while (digit >= 0) {
           value = (value << 4) | digit;
           if (value > Chars.NonBMPMax) report(parser, Errors.UndefinedUnicodeCodePoint);
-          parser.index++; parser.column++;
+          parser.index++;
+          parser.column++;
           digit = toHex(parser.source.charCodeAt(parser.index));
       }
       if (value < 0 || !consumeOpt(parser, Chars.RightBrace)) {
@@ -172,7 +175,8 @@ export function scanMaybeIdentifier(parser: Parser, context: Context, first: num
       const lo = parser.source.charCodeAt(parser.index);
       if ((lo & 0xFC00) === 0xDC00) {
           first = (first & 0x3FF) << 10 | lo & 0x3FF | Chars.NonBMPMin;
-          parser.index++; parser.column++;
+          parser.index++;
+          parser.column++;
       }
   }
 
