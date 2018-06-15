@@ -29,7 +29,7 @@ export function scanNumeric(parser: Parser, context: Context): Token {
   const { index, column } = parser;
   let next = parser.source.charCodeAt(parser.index);
   let state = NumericState.None;
-  if (next === Chars.Period) state = state |= NumericState.IsFloat;
+  if (next === Chars.Period) state = state | NumericState.IsFloat;
 
   if (state & NumericState.IsFloat) {
       parser.tokenValue = scanDecimalDigitsOrSeparator(parser);
@@ -45,7 +45,7 @@ export function scanNumeric(parser: Parser, context: Context): Token {
               parser.index++; parser.column++;
               next = parser.source.charCodeAt(parser.index);
               if (next === Chars.Underscore) report(parser, Errors.Unexpected);
-              state = state |= NumericState.HasSeparator;
+              state = state | NumericState.HasSeparator;
               next = next;
               continue;
           }
@@ -78,7 +78,7 @@ export function scanNumeric(parser: Parser, context: Context): Token {
 
   if (parser.source.charCodeAt(parser.index) === Chars.LowerN) {
       if (state & NumericState.IsFloat) report(parser, Errors.Unexpected);
-      state = state |= NumericState.IsBigInt;
+      state = state | NumericState.IsBigInt;
       parser.index++; parser.column++;
   }
 
@@ -184,7 +184,7 @@ export function scanOctalOrBinaryDigits(parser: Parser, context: Context, base: 
   }
 
   if (state & NumericState.HasSeparator) report(parser, Errors.TrailingNumericSeparator);
-  if(consumeOpt(parser, Chars.LowerN)) state = state |= NumericState.IsBigInt
+  if(consumeOpt(parser, Chars.LowerN)) state = state | NumericState.IsBigInt
   if (isValidIdentifierStart(parser.source.charCodeAt(parser.index))) {
       report(parser, Errors.Unexpected);
   }
@@ -223,7 +223,7 @@ export function scanHexDigits(parser: Parser, context: Context): Token {
       parser.index++; parser.column++;
   }
   if (state & NumericState.HasSeparator) report(parser, Errors.TrailingNumericSeparator);
-  if(consumeOpt(parser, Chars.LowerN)) state = state |= NumericState.IsBigInt;
+  if(consumeOpt(parser, Chars.LowerN)) state = state | NumericState.IsBigInt;
   if (context & Context.OptionsRaw) parser.tokenRaw = parser.source.slice(index, parser.index);
   return state & NumericState.IsBigInt ? Token.BigInt : Token.NumericLiteral;
 }
